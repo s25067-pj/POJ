@@ -1,0 +1,17 @@
+package choinka;
+
+public class zjazd_2 {
+	public static void main(String args[]){
+		String[] tablica = {"1","6","1"};
+		System.out.println(sum(tablica));
+	}
+		
+	public static String sum (String[] array) {
+		//for(int i=0;i<3;i++) {
+		Integer valueOf = Integer.valueOf(array[1]);
+		//}
+		System.out.println(sum(array));
+		return null;
+	}
+}	
+	

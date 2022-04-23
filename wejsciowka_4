@@ -1,0 +1,83 @@
+package wejsciowka_3;
+
+public class Usmiech extends Buzka implements Skalowalny, Rysowalny {
+	String u1=":-)";
+	public Usmiech() {
+		super('p');
+		// TODO Auto-generated constructor stub
+	}
+	public boolean czySieUsmiecha() {
+		return true;
+	}
+	
+	public String toString() {
+		return u1;
+	}
+}
+	
+package wejsciowka_3;
+
+
+public class Buzka implements Rysowalny, Skalowalny, PrzedstawiaEmocje{
+	
+
+	char u2;
+	
+	public Buzka(char usta) {
+		// TODO Auto-generated constructor stub
+
+	}
+
+	@Override
+	public boolean czySieUsmiecha() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void przestanSieUsmiechac() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void draw(int times) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void draw() {
+		System.out.println(":-(");
+		// TODO Auto-generated method stub
+		
+	}
+	
+}
+
+package wejsciowka_3;
+
+public interface Rysowalny {
+	void draw();
+}
+
+package wejsciowka_3;
+
+public interface Skalowalny extends Rysowalny{
+
+	void draw(int times);
+
+}
+
+package wejsciowka_3;
+
+public interface PrzedstawiaEmocje {
+
+	boolean czySieUsmiecha();
+
+	void przestanSieUsmiechac();
+
+}
+
+
+

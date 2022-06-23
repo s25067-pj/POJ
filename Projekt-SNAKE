@@ -9,7 +9,6 @@ public class main {
 	}
 }
 
-
 package snake;
 
 import javax.swing.JFrame;
@@ -18,18 +17,18 @@ public class Ramka extends JFrame {
 
 	Ramka(){
 		
-		Panel panel = new Panel();
+		Gra gra = new Gra();
 		
-		this.add(panel);
-		this.setTitle("Snake");
+		this.add(gra);
+		this.setTitle("Snake s25067");
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setResizable(false);
 		this.pack();
 		this.setVisible(true);
-		this.setLocationRelativeTo(null);
 	}
 
 }
+
 
 package snake;
 
@@ -39,61 +38,86 @@ import javax.swing.*;
 import java.util.Random;
 import javax.swing.JPanel;
 
-public class Panel extends JPanel implements ActionListener{
+public class Gra extends JPanel implements ActionListener{
 	
-	static final int szerokoscRamki = 700;
-	static final int wysokoscRamki = 700;
-	static final int rozmiarElementu = 25;
-	static final int iloscElementowNaPlanszy = 19600;
-	static final int tepoGry = 75;
+	//ramka
+	int szerokoscRamki = 700;
+	int wysokoscRamki = 700;
+	int rozmiarElementu = 25;
+	int iloscElementowNaPlanszy = szerokoscRamki*wysokoscRamki/rozmiarElementu;
+	int tepoGry = 60;
+	
+	//wspolrzedne weza
 	final int wazX[] = new int[iloscElementowNaPlanszy]; 
 	final int wazY[] = new int[iloscElementowNaPlanszy];
+	int pozycjaStartowaX = szerokoscRamki/rozmiarElementu/2*rozmiarElementu;  //zaczynamy od srodka
+	int pozycjaStartowaY = wysokoscRamki/rozmiarElementu/2*rozmiarElementu;
 	int dlugoscWeza = 3;
-	int punkty;
+	
+	//wspolrzedne jedzenia
 	int jedzenieX;
 	int jedzenieY;
-	char kierunek = 'D';
+	int punkty;
+	
+	//ruch weza
 	boolean running = false;
+	boolean beforeRunning = true;
+	boolean koniecGry = false;
+	char kierunek = 'U';
 	Timer timer;
 	Random random;
-	Random rand = new Random();
-		
 	
-	Panel () {
-		random = new Random();
+	
+	
+	Gra () {
+		
+		//ustawianie ramki
 		this.setPreferredSize(new Dimension(szerokoscRamki, wysokoscRamki));
 		this.setBackground(Color.black);
 		this.setFocusable(true);
 		this.addKeyListener(new Sterowanie());
-		startGame();
 		
+		RozpoczecieGry();	
 	}
+	
 	public void ekranPoczatkowy (Graphics g) {
-		g.setColor(Color.blue);
+		g.setColor(Color.red);
 		g.setFont(new Font ("Ink Free", Font.BOLD, 75));
 		FontMetrics metrics1 = getFontMetrics(g.getFont());
-		g.drawString("GRA SNAKE", (szerokoscRamki - metrics1.stringWidth("GRA SNAKE"))/2, wysokoscRamki/2);
-		
-		g.setFont(new Font ("Ink Free", Font.BOLD, 40));
+		g.drawString("GRA SNAKE", (szerokoscRamki - metrics1.stringWidth("GRA SNAKE"))/2, wysokoscRamki/2-200);
+		g.setColor(Color.orange);
+		g.setFont(new Font ("Ink Free", Font.ITALIC, 25));
 		FontMetrics metrics2 = getFontMetrics(g.getFont());
-		g.drawString("CZESC! WITAJ W GRZE SNAKE!", (szerokoscRamki - metrics2.stringWidth("CZESC! WITAJ W GRZE SNAKE!"))/2, wysokoscRamki/2);
-		g.drawString("CELEM GRY JEST NAKARMIENIE WEZA JAK NAJWIEKSZA PORCJA JEDZENIA, KTORE POJAWIA SIE W LOSOWYCH MIEJSCACH NA EKRANI", (szerokoscRamki - metrics2.stringWidth("CELEM GRY JEST NAKARMIENIE WEZA JAK NAJWIEKSZA PORCJA JEDZENIA, KTORE POJAWIA SIE W LOSOWYCH MIEJSCACH NA EKRANI"))/2, wysokoscRamki/2);
-		g.drawString("NA POCZATKU WAZ SKLADA SIE Z GLOWY + DWOCH SEGMENTOW OGONK", (szerokoscRamki - metrics1.stringWidth("NA POCZATKU WAZ SKLADA SIE Z GLOWY + DWOCH SEGMENTOW OGONK"))/2, wysokoscRamki/2);
-		g.drawString("GRA ROZPOCZYNA SIE OD SRODKA PLANSZY W KIERUNKU JEJ GORNEJ KRAWEDZI", (szerokoscRamki - metrics1.stringWidth("GRA ROZPOCZYNA SIE OD SRODKA PLANSZY W KIERUNKU JEJ GORNEJ KRAWEDZI"))/2, wysokoscRamki/2);
-		g.drawString("WEZEM MOZESZ STEROWAC ZA POMOCA STRZALEK", (szerokoscRamki - metrics1.stringWidth("WEZEM MOZESZ STEROWAC ZA POMOCA STRZALEK"))/2, wysokoscRamki/2);
-		g.drawString("OGON WEZA ROSNIE WPROSTPROPORCJONALNIE DO ILOSC ZJEDZONEGO POZYWIENIA", (szerokoscRamki - metrics1.stringWidth("OGON WEZA ROSNIE WPROSTPROPORCJONALNIE DO ILOSC ZJEDZONEGO POZYWIENIA"))/2, wysokoscRamki/2);
-		g.drawString("GRA SKONCZY SIE W PRZYPADKU WYJECHANIA WEZA POZA OBSZAR PLANSZY, LUB KIEDY WAZ NAJEDZIE NA WLASNY OGON", (szerokoscRamki - metrics1.stringWidth("GRA SKONCZY SIE W PRZYPADKU WYJECHANIA WEZA POZA OBSZAR PLANSZY, LUB KIEDY WAZ NAJEDZIE NA WLASNY OGON"))/2, wysokoscRamki/2);
-		g.drawString("POWODZENIA!", (szerokoscRamki - metrics1.stringWidth("POWODZENIA!"))/2, wysokoscRamki/2);
-		g.drawString("Kliknij ENTER, aby rozpocząć", (szerokoscRamki - metrics2.stringWidth("Kliknij ENTER, aby rozpocząć"))/2, wysokoscRamki/2);
-		//scan.nextLine();
+		g.drawString("CZESC! WITAJ W GRZE SNAKE!", (szerokoscRamki - metrics2.stringWidth("CZESC! WITAJ W GRZE SNAKE!"))/2, wysokoscRamki/2-100);
+		g.setFont(new Font ("Ink Free", Font.ITALIC, 15));
+		g.drawString("CELEM GRY JEST NAKARMIENIE WEZA JAK NAJWIEKSZA PORCJA JEDZENIA,", (szerokoscRamki - metrics2.stringWidth("CELEM GRY JEST NAKARMIENIE WEZA JAK NAJWIEKSZA PORCJA JEDZENIA,"))/2+180, wysokoscRamki/2-50);
+		g.drawString("KTORE POJAWIA SIE W LOSOWYCH MIEJSCACH NA EKRANIE", (szerokoscRamki - metrics2.stringWidth("KTORE POJAWIA SIE W LOSOWYCH MIEJSCACH NA EKRANI"))/2+120, wysokoscRamki/2-20);
+		g.drawString("WEZEM MOZESZ STEROWAC ZA POMOCA STRZALEK", (szerokoscRamki - metrics2.stringWidth("WEZEM MOZESZ STEROWAC ZA POMOCA STRZALEK"))/2+120, wysokoscRamki/2+20);
+		g.drawString("OGON WEZA ROSNIE WPROSTPROPORCJONALNIE DO ILOSC ZJEDZONEGO POZYWIENIA", (szerokoscRamki - metrics2.stringWidth("OGON WEZA ROSNIE WPROSTPROPORCJONALNIE DO ILOSC ZJEDZONEGO POZYWIENIA"))/2+200, wysokoscRamki/2+70);
+		g.drawString("GRA SKONCZY SIE W PRZYPADKU WYJECHANIA WEZA POZA OBSZAR PLANSZY,", (szerokoscRamki - metrics2.stringWidth("GRA SKONCZY SIE W PRZYPADKU WYJECHANIA WEZA POZA OBSZAR PLANSZY,"))/2+180, wysokoscRamki/2+120);
+		g.drawString("LUB KIEDY WAZ NAJEDZIE NA WLASNY OGON", (szerokoscRamki - metrics2.stringWidth("LUB KIEDY WAZ NAJEDZIE NA WLASNY OGON"))/2+100, wysokoscRamki/2+140);
+		g.setFont(new Font ("Ink Free", Font.BOLD, 40));
+		g.drawString("POWODZENIA!", (szerokoscRamki - metrics1.stringWidth("POWODZENIA!"))/2+110, wysokoscRamki/2+230);
+		g.setFont(new Font ("Ink Free", Font.ITALIC, 30));
+		g.drawString("Kliknij ENTER, aby rozpocząć...", (szerokoscRamki - metrics2.stringWidth("Kliknij ENTER, aby rozpocząć..."))/2-40, wysokoscRamki/2+280);
 		
 	}
 	
-	public void startGame() {	
+	public void RozpoczecieGry() {	
+		
+		//losowanie jedzenia
 		jedzenie();
-		running = true;
+		
+		//ustalanie pozycji weza
+		for (int i = 0; i < dlugoscWeza; i++) {
+			wazX[i] += pozycjaStartowaX;
+		}
+		for (int i = 0; i < dlugoscWeza; i++) {
+			wazY[i] += pozycjaStartowaY;
+		}
+		
 		timer = new Timer(tepoGry, this);
-		timer.start();	
+		timer.start();
 	}
 	
 	public void paintComponent(Graphics g) {
@@ -103,45 +127,46 @@ public class Panel extends JPanel implements ActionListener{
 	
 	
 	public void draw (Graphics g) {
-		
-		
-		if(running) {
+		//ekran poczatkowy
+		if (!running) {
+			ekranPoczatkowy(g);
+		}
+		//glowna czesc gry
+		if(running && !koniecGry) {
 			
+			//rysowanie jedzenia
 			g.setColor(Color.red);
 			g.fillRect(jedzenieX, jedzenieY, rozmiarElementu, rozmiarElementu);
 			
-
+			//rysowanie weza
 			for (int i=0; i< dlugoscWeza; i++) {
-				if (i == 0) {
 					g.setColor(Color.green);
 					g.fillOval(wazX[i], wazY[i], rozmiarElementu, rozmiarElementu);
-					
-				}
-				else {
-					g.setColor(Color.green);
-					g.fillOval(wazX[i], wazY[i], rozmiarElementu, rozmiarElementu);
-				}
 			}
-
 		}
-		else {
-			gameOver(g);
-		}
-		
+		//ekran koncowy
+		if (koniecGry) {
+			KoniecGry(g);
+		}		
 	}
 	
+	//losowanie jedzenia
 	public void jedzenie() {
+		random = new Random();
 		jedzenieX = random.nextInt((int)(szerokoscRamki/rozmiarElementu))*rozmiarElementu;
 		jedzenieY = random.nextInt((int)(wysokoscRamki/rozmiarElementu))*rozmiarElementu;	
 	}
 	
+	//ruch weza
 	public void move() {
 		
+		//usuwanie ostatniego elementu i dodawanie nowego
 		for(int i = dlugoscWeza; i>0; i--) {
 			wazX[i] = wazX[i-1];
 			wazY[i] = wazY[i-1];
 			
 		}
+		//rysowanie weza w zaleznosci od kierunku ruchu
 		switch(kierunek) {
 		case 'U':
 			wazY[0]= wazY[0] - rozmiarElementu;
@@ -156,56 +181,58 @@ public class Panel extends JPanel implements ActionListener{
 			wazX[0]= wazX[0] + rozmiarElementu;
 			break;
 		}
-		for(int i = dlugoscWeza; i>0;i--) {
-			if ((wazX[0]==wazX[i]) && (wazY[0]==wazY[i])) {
-				running = false;
-			}
-		}
-		if (wazX[0]<0) {
-			running = false;
-		}
-		if (wazY[0]<0) {
-			running = false;
-		}
-		if (wazX[0]> szerokoscRamki) {
-			running = false;
-		}
-		if (wazY[0]> wysokoscRamki) {
-			running = false;
-		}
-		if (!running) {
-			timer.stop();
-		}
-	}
-	
-	public void checkApple() {
+		
+		//sprawdzenie czy waz najechal na jablko
 		if ((wazX[0] == jedzenieX) && (wazY[0] == jedzenieY)) {
 			dlugoscWeza++;
 			punkty++;
 			jedzenie();
 		}
+		
+		//sprawdzenie czy waz nie zjadl swojego ogona
+		for(int i = dlugoscWeza; i>0; i--) {
+			if ((wazX[0]==wazX[i]) && (wazY[0]==wazY[i])) {
+				koniecGry = true;
+			}
+		}
+		
+		//sprawdzanie czy waz nie udezyl w sciane
+		if (wazX[0]<0) {
+			koniecGry = true;
+		}
+		if (wazY[0]<0) {
+			koniecGry = true;
+		}
+		if (wazX[0]> szerokoscRamki) {
+			koniecGry = true;
+		}
+		if (wazY[0]> wysokoscRamki) {
+			koniecGry = true;
+		}
+		if (!running) {
+			timer.stop();
+		}
+		
 	}
 	
-	public void gameOver (Graphics g) {
+	
+	public void KoniecGry (Graphics g) {
 		g.setColor(Color.red);
 		g.setFont(new Font ("Ink Free", Font.BOLD, 75));
 		FontMetrics metrics1 = getFontMetrics(g.getFont());
-		g.drawString("KONIEC GRY!", (szerokoscRamki - metrics1.stringWidth("KONIEC GRY!"))/2, wysokoscRamki/2);
+		g.drawString("KONIEC GRY!", (szerokoscRamki - metrics1.stringWidth("KONIEC GRY!"))/2, wysokoscRamki/2-100);
 	
-		g.setColor(Color.red);
-		g.setFont(new Font ("Ink Free", Font.BOLD, 40));
+		g.setColor(Color.yellow);
+		g.setFont(new Font ("Ink Free", Font.ITALIC, 40));
 		FontMetrics metrics2 = getFontMetrics(g.getFont());
-		g.drawString("Twój wynik: "+punkty, (szerokoscRamki - metrics2.stringWidth("Twój wynik: "+punkty))/2, g.getFont().getSize());
+		g.drawString("Twój wynik: "+punkty, (szerokoscRamki - metrics1.stringWidth("Twój wynik: "+punkty))/2+100, wysokoscRamki/2+200);
 
 	}
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-
 		if(running) {
 			move();
-			checkApple();
-
 		}
 		repaint();
 	}
@@ -230,10 +257,14 @@ public class Panel extends JPanel implements ActionListener{
 					if(kierunek != 'U') {
 						kierunek = 'D';
 					} break;
+				case KeyEvent.VK_ENTER:
+					running = true;
+					break;
 				}
 		}
 		
 	}
 
 }
+
 
